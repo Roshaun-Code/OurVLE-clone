@@ -121,16 +121,20 @@ def register_for_course():
 
 # Retrieve Members of a Course
 @app.route('/courses/<int:course_id>/members', methods=['GET'])
-def retrieve_members(course_id):
-    query = """
-        SELECT users.id, users.username, users.role
-        FROM users
-        JOIN course_registrations ON users.id = course_registrations.user_id
-        WHERE course_registrations.course_id = %s
-    """
-    params = (course_id,)
-    members = returnQueryResults(query, params)
-    return jsonify(members)
+def get_course_members(course_id):
+    try:
+        query = """
+        SELECT u.user_id, u.username, u.role
+        FROM users u
+        JOIN student_courses sc ON u.user_id = sc.student_id
+        WHERE sc.course_id = %s
+        """
+        members = returnQueryResults(query, (course_id,))
+        if not members:
+            return jsonify({"message": "No members found for this course"}), 404
+        return jsonify(members)
+    except Exception as e:
+        return make_response(f"Error: {e}", 500)
 
 # Retrieve Calendar Events
 @app.route('/courses/<int:course_id>/calendar', methods=['GET'])
