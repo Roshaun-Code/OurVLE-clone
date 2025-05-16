@@ -10,47 +10,50 @@ def write_query_to_file(file, query):
 # Generate and insert users
 def generate_users(file):
     # Insert students
-    for _ in range(1, 100001):
-        username = fake.name()
+    for i in range(1, 100001):
+        username = fake.unique.user_name()  # Generate a unique username
         password = fake.password()
         role = "student"
-        student_id = f"620{random.randint(100000, 999999)}"  # 9-digit ID starting with 620
-        query = f"INSERT IGNORE INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
+        query = f"INSERT INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
         write_query_to_file(file, query)
     
     # Insert lecturers
-    for _ in range(1, 51):
-        username = fake.name()
+    for i in range(1, 51):
+        username = fake.unique.user_name()  # Generate a unique username
         password = fake.password()
         role = "lecturer"
-        query = f"INSERT IGNORE INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
+        query = f"INSERT INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
         write_query_to_file(file, query)
     
     # Insert admins
     for i in range(1, 6):
-        username = f"admin_{i}"
+        username = f"admin_{i}"  # Admin usernames are predefined
         password = f"password{i}"
         role = "admin"
-        query = f"INSERT IGNORE INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
+        query = f"INSERT INTO users (username, password, role) VALUES ('{username}', '{password}', '{role}')"
         write_query_to_file(file, query)
 
 # Generate and insert courses
 def generate_courses(file):
     # Simulate lecturer IDs
-    lecturer_ids = range(1, 51)  # Assuming 50 lecturers exist
+    lecturer_ids = list(range(1, 51))  # Assuming 50 lecturers exist
     
-    for i, lecturer_id in enumerate(lecturer_ids, start=1):
-        if i > 200:  # Limit to 200 courses
-            break
-        course_name = f"Course {i}"
-        query = f"INSERT INTO courses (course_name, lecturer_id) VALUES ('{course_name}', {lecturer_id})"
-        write_query_to_file(file, query)
+    # Assign up to 5 courses per lecturer
+    course_id = 1
+    for lecturer_id in lecturer_ids:
+        num_courses = random.randint(1, 5)  # Each lecturer teaches 1 to 5 courses
+        for _ in range(num_courses):
+            if course_id > 200:  # Limit to 200 courses
+                break
+            course_name = f"Course {course_id}"
+            query = f"INSERT INTO courses (course_name, lecturer_id) VALUES ('{course_name}', {lecturer_id})"
+            write_query_to_file(file, query)
+            course_id += 1
 
 # Generate and insert student-course enrollments
 def generate_enrollments(file):
-    # Simulate student and course IDs
-    student_ids = list(range(1, 100001))  # Assuming 100,000 students exist
-    course_ids = list(range(1, 201))  # Assuming 200 courses exist
+    student_ids = list(range(1, 100001))  
+    course_ids = list(range(1, 201))  
     
     # Ensure each course has at least 10 members
     for course_id in course_ids:
@@ -71,7 +74,7 @@ def generate_enrollments(file):
 # Generate and insert calendar events
 def generate_calendar_events(file):
     # Simulate course IDs
-    course_ids = range(1, 201)  # Assuming 200 courses exist
+    course_ids = range(1, 201)  
     
     for course_id in course_ids:
         for week in range(1, 5):  # 4 events per course
@@ -84,7 +87,7 @@ def generate_calendar_events(file):
 # Generate and insert forums
 def generate_forums(file):
     # Simulate course IDs
-    course_ids = range(1, 201)  # Assuming 200 courses exist
+    course_ids = range(1, 201)  
     
     for course_id in course_ids:
         forum_title = f"Forum for Course {course_id}"
@@ -93,16 +96,41 @@ def generate_forums(file):
 
 # Generate and insert course content
 def generate_course_content(file):
-    # Simulate course IDs
-    course_ids = range(1, 201)  # Assuming 200 courses exist
+    course_ids = range(1, 201)  
     
     for course_id in course_ids:
-        for week in range(1, 5):  # 4 pieces of content per course
+        for week in range(1, 5):  
             section = f"Week {week}"
             content_title = f"Content for Week {week} in Course {course_id}"
             content_link = fake.url()
             content_file_path = f"/path/to/content_{course_id}_week_{week}.pdf"
             query = f"INSERT INTO course_content (course_id, section, content_title, content_link, content_file_path) VALUES ({course_id}, '{section}', '{content_title}', '{content_link}', '{content_file_path}')"
+            write_query_to_file(file, query)
+
+# Generate and insert assignments
+def generate_assignments(file):
+    # Simulate course IDs
+    course_ids = range(1, 201)  
+    
+    for course_id in course_ids:
+        for i in range(1, 4):  # 3 assignments per course
+            title = f"Assignment {i} for Course {course_id}"
+            description = f"Description for Assignment {i} in Course {course_id}"
+            due_date = f"2025-05-{random.randint(1, 28)}"
+            query = f"INSERT INTO assignments (course_id, title, description, due_date) VALUES ({course_id}, '{title}', '{description}', '{due_date}')"
+            write_query_to_file(file, query)
+
+# Generate and insert assignment submissions
+def generate_assignment_submissions(file):
+    assignment_ids = range(1, 601)  
+    student_ids = range(1, 100001)  
+    
+    for assignment_id in assignment_ids:
+        for _ in range(10):  
+            student_id = random.choice(student_ids)
+            file_path = f"/path/to/submission_{assignment_id}_{student_id}.pdf"
+            grade = random.randint(50, 100)  
+            query = f"INSERT INTO assignment_submissions (assignment_id, student_id, file_path, grade) VALUES ({assignment_id}, {student_id}, '{file_path}', {grade})"
             write_query_to_file(file, query)
 
 # Main function
@@ -114,6 +142,8 @@ def main():
         generate_calendar_events(file)
         generate_forums(file)
         generate_course_content(file)
+        generate_assignments(file)
+        generate_assignment_submissions(file)
     print("SQL file 'generated_data.sql' created successfully")
 
 if __name__ == "__main__":

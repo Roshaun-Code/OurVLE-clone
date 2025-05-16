@@ -286,7 +286,7 @@ def grade_assignment(assignment_id):
 
     return executeQuery(query, params)
 
-# Reports: Expose Views
+
 @app.route('/reports/courses/50plus', methods=['GET'])
 def courses_with_50_plus_students():
     query = "SELECT * FROM courses_with_50_plus_students"
